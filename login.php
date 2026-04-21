@@ -119,10 +119,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     .login-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 2.5rem;
-      width: 100%;
-      max-width: 420px;
+      border-radius: 20px;
+      padding: 40px;
+      width: 600px;
       box-shadow: 0 25px 80px rgba(0,0,0,0.5), 0 0 60px rgba(79,142,247,0.08);
       animation: loginDrop 0.7s cubic-bezier(0.23, 1, 0.32, 1) both;
     }

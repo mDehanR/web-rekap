@@ -45,7 +45,7 @@ $recent = $conn->query("SELECT * FROM siswa_nilai ORDER BY created_at DESC LIMIT
 
     <!-- Page Header -->
     <div class="page-header" data-reveal>
-      <h1 class="page-title">Dashboard</h1>
+      <h1 class="page-title">Beranda</h1>
       <div class="page-breadcrumb"><span>LastGrade</span> / Beranda</div>
     </div>
 

@@ -40,7 +40,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
     </div>
 
     <h1 class="hero-title" data-reveal data-delay="2">
-      LastGrade
+      LastGrade Rekap Nilai Siswa
     </h1>
 
     <p class="hero-sub" data-reveal data-delay="3">
