@@ -2,7 +2,13 @@
 session_start();
 // Redirect ke beranda jika sudah login
 if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
-    header("Location: beranda.php");
+    if (isset($_SESSION['role']) && $_SESSION['role'] === 'guru') {
+      header("Location: beranda.php");
+    } elseif (isset($_SESSION['role']) && $_SESSION['role'] === 'murid') {
+      header("Location: request_nilai.php");
+    } else {
+      header("Location: pilih_role.php");
+    }
     exit();
 }
 ?>
@@ -11,7 +17,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rekap Nilai — Sistem Akademik Digital</title>
+  <title>LastGrade - Rekap Nilai Siswa</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -34,7 +40,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
     </div>
 
     <h1 class="hero-title" data-reveal data-delay="2">
-      Rekap Nilai<br>Siswa
+      LastGrade
     </h1>
 
     <p class="hero-sub" data-reveal data-delay="3">
@@ -44,11 +50,9 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
 
     <div class="hero-buttons" data-reveal data-delay="4">
       <a href="login.php?mode=login" class="btn-primary-hero">
-        <span>🔐</span>
         <span>Login</span>
       </a>
-      <a href="login.php?mode=register" class="btn-primary-hero" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18);">
-        <span>📝</span>
+      <a href="login.php?mode=register" class="btn-primary-hero">
         <span>Sign In</span>
       </a>
     </div>

@@ -2,7 +2,7 @@
 session_start();
 // Redirect jika sudah login
 if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
-    header("Location: beranda.php");
+    header("Location: pilih_role.php");
     exit();
 }
 
@@ -35,7 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_SESSION['dummy_users'][$user]) && $_SESSION['dummy_users'][$user] === $pass) {
             $_SESSION['loggedin'] = true;
             $_SESSION['username'] = $user;
-            header("Location: beranda.php");
+            unset($_SESSION['role']);
+            header("Location: pilih_role.php");
             exit();
         } else {
             $error = 'Username atau password salah.';
@@ -321,7 +322,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <div class="login-wrapper">
     <div class="login-card">
       <div class="login-logo">
-        <div class="login-logo-icon">📊</div>
         <h1 class="login-title"><?= $mode === 'register' ? 'Buat Akun Dummy' : 'Selamat Datang' ?></h1>
         <p class="login-sub"><?= $mode === 'register' ? 'Sign In untuk mencoba akun baru' : 'Masuk dengan akun Anda' ?></p>
       </div>

@@ -259,4 +259,19 @@ document.addEventListener('DOMContentLoaded', function () {
     document.head.appendChild(style);
   }
 
+  /* ── 12. HERO PARALLAX (homepage) ── */
+  const heroWrapper = document.querySelector('.hero-wrapper');
+  const heroOrbs = document.querySelectorAll('.mesh-orb');
+  if (heroWrapper && heroOrbs.length > 0) {
+    window.addEventListener('mousemove', (e) => {
+      const x = (e.clientX / window.innerWidth - 0.5);
+      const y = (e.clientY / window.innerHeight - 0.5);
+      heroWrapper.style.transform = `translate(${x * 10}px, ${y * 8}px)`;
+      heroOrbs.forEach((orb, i) => {
+        const factor = (i + 1) * 6;
+        orb.style.transform = `translate(${x * factor}px, ${y * factor}px)`;
+      });
+    });
+  }
+
 });

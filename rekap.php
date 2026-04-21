@@ -1,6 +1,6 @@
 <?php
 require_once 'functions.php';
-cekLogin();
+cekRoleGuru();
 require_once 'db.php';
 
 // ── Handle Delete ──
@@ -70,7 +70,7 @@ $avgAkhir   = $totalSiswa > 0 ? array_sum(array_column($allData, 'akhir')) / $to
     <div class="page-header" data-reveal>
       <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;">
         <div>
-          <h1 class="page-title">📋 Rekap Nilai Siswa</h1>
+          <h1 class="page-title">📋 LastGrade</h1>
           <div class="page-breadcrumb"><span>Rekap Nilai</span> / Daftar Nilai</div>
         </div>
         <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">

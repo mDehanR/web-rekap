@@ -1,6 +1,6 @@
 <?php
 require_once 'functions.php';
-cekLogin();
+cekRoleGuru();
 require_once 'db.php';
 
 // ── Statistik ──
@@ -26,7 +26,7 @@ $recent = $conn->query("SELECT * FROM siswa_nilai ORDER BY created_at DESC LIMIT
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Beranda — Rekap Nilai</title>
+  <title>Beranda — LastGrade</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -46,7 +46,7 @@ $recent = $conn->query("SELECT * FROM siswa_nilai ORDER BY created_at DESC LIMIT
     <!-- Page Header -->
     <div class="page-header" data-reveal>
       <h1 class="page-title">Dashboard</h1>
-      <div class="page-breadcrumb"><span>Rekap Nilai</span> / Beranda</div>
+      <div class="page-breadcrumb"><span>LastGrade</span> / Beranda</div>
     </div>
 
     <!-- Stats Grid -->

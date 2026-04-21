@@ -1,6 +1,6 @@
 <?php
 require_once 'functions.php';
-cekLogin();
+cekRoleGuru();
 require_once 'db.php';
 
 $errors  = [];

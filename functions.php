@@ -70,4 +70,32 @@ function cekLogin() {
         redirect('login.php');
     }
 }
+
+/**
+ * Ambil role user dari session
+ */
+function getRole() {
+    if (session_status() == PHP_SESSION_NONE) session_start();
+    return $_SESSION['role'] ?? null;
+}
+
+/**
+ * Wajib pilih role setelah login
+ */
+function cekRoleDipilih() {
+    cekLogin();
+    if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['guru', 'murid'], true)) {
+        redirect('pilih_role.php');
+    }
+}
+
+/**
+ * Hanya role guru yang boleh akses halaman ini
+ */
+function cekRoleGuru() {
+    cekRoleDipilih();
+    if ($_SESSION['role'] !== 'guru') {
+        redirect('request_nilai.php');
+    }
+}
 ?>
