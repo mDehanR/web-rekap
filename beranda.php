@@ -3,23 +3,50 @@ require_once 'functions.php';
 cekRoleGuru();
 require_once 'db.php';
 
-// ── Statistik ──
-$totalSiswa = $conn->query("SELECT COUNT(*) AS n FROM siswa_nilai")->fetch_assoc()['n'] ?? 0;
-$avgAkhir   = $conn->query("SELECT AVG(akhir) AS a FROM siswa_nilai")->fetch_assoc()['a'] ?? 0;
-$nilaiTert  = $conn->query("SELECT MAX(akhir) AS m FROM siswa_nilai")->fetch_assoc()['m'] ?? 0;
-$nilaiTerend= $conn->query("SELECT MIN(akhir) AS m FROM siswa_nilai")->fetch_assoc()['m'] ?? 0;
+// ── Statistik dengan error handling ──
+$totalSiswa = 0;
+$avgAkhir = 0;
+$nilaiTert = 0;
+$nilaiTerend = 0;
+
+if ($conn && !$conn->connect_error) {
+    $result = $conn->query("SELECT COUNT(*) AS n FROM siswa_nilai");
+    if ($result) {
+        $totalSiswa = $result->fetch_assoc()['n'] ?? 0;
+    }
+    
+    $result = $conn->query("SELECT AVG(akhir) AS a FROM siswa_nilai");
+    if ($result) {
+        $avgAkhir = $result->fetch_assoc()['a'] ?? 0;
+    }
+    
+    $result = $conn->query("SELECT MAX(akhir) AS m FROM siswa_nilai");
+    if ($result) {
+        $nilaiTert = $result->fetch_assoc()['m'] ?? 0;
+    }
+    
+    $result = $conn->query("SELECT MIN(akhir) AS m FROM siswa_nilai");
+    if ($result) {
+        $nilaiTerend = $result->fetch_assoc()['m'] ?? 0;
+    }
+}
 
 // ── Distribusi Huruf ──
 $distribusi = [];
-$res = $conn->query("SELECT huruf, COUNT(*) AS jumlah FROM siswa_nilai GROUP BY huruf ORDER BY huruf");
-if ($res) {
-    while ($row = $res->fetch_assoc()) {
-        $distribusi[$row['huruf']] = $row['jumlah'];
+if ($conn && !$conn->connect_error) {
+    $res = $conn->query("SELECT huruf, COUNT(*) AS jumlah FROM siswa_nilai GROUP BY huruf ORDER BY huruf");
+    if ($res) {
+        while ($row = $res->fetch_assoc()) {
+            $distribusi[$row['huruf']] = $row['jumlah'];
+        }
     }
 }
 
 // ── Data terbaru ──
-$recent = $conn->query("SELECT * FROM siswa_nilai ORDER BY created_at DESC LIMIT 5");
+$recent = null;
+if ($conn && !$conn->connect_error) {
+    $recent = $conn->query("SELECT * FROM siswa_nilai ORDER BY created_at DESC LIMIT 5");
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -39,7 +66,7 @@ $recent = $conn->query("SELECT * FROM siswa_nilai ORDER BY created_at DESC LIMIT
   <div class="main-content">
     <!-- Mobile Header -->
     <div class="mobile-header">
-      <div class="mobile-title">📊 Beranda</div>
+      <div class="mobile-title">Beranda</div>
       <button class="hamburger" id="hamburger">☰</button>
     </div>
 
@@ -82,7 +109,7 @@ $recent = $conn->query("SELECT * FROM siswa_nilai ORDER BY created_at DESC LIMIT
       <!-- Distribusi Huruf -->
       <div class="card" data-reveal="left">
         <div class="card-header">
-          <h2 class="card-title">📊 Distribusi Nilai</h2>
+          <h2 class="card-title">Distribusi Nilai</h2>
         </div>
         <div class="card-body">
           <?php

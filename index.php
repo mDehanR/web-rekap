@@ -7,7 +7,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
     } elseif (isset($_SESSION['role']) && $_SESSION['role'] === 'murid') {
       header("Location: request_nilai.php");
     } else {
-      header("Location: pilih_role.php");
+      header("Location: login.php");
     }
     exit();
 }

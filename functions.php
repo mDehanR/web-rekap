@@ -85,7 +85,7 @@ function getRole() {
 function cekRoleDipilih() {
     cekLogin();
     if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['guru', 'murid'], true)) {
-        redirect('pilih_role.php');
+        redirect('login.php');
     }
 }
 

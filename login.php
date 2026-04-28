@@ -1,14 +1,19 @@
 <?php
 session_start();
-// Redirect jika sudah login
-if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
-    header("Location: pilih_role.php");
+// Redirect jika sudah login dan role sudah dipilih
+if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true && isset($_SESSION['role'])) {
+    if ($_SESSION['role'] === 'guru') {
+        header("Location: beranda.php");
+    } else {
+        header("Location: request_nilai.php");
+    }
     exit();
 }
 
 $error = '';
 $success = '';
-$mode = ($_GET['mode'] ?? 'login') === 'register' ? 'register' : 'login';
+$form_mode = ($_GET['mode'] ?? 'login') === 'register' ? 'register' : 'login';
+$selected_role = $_SESSION['pending_role'] ?? 'guru';
 
 if (!isset($_SESSION['dummy_users']) || !is_array($_SESSION['dummy_users'])) {
     $_SESSION['dummy_users'] = [
@@ -17,11 +22,12 @@ if (!isset($_SESSION['dummy_users']) || !is_array($_SESSION['dummy_users'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $mode = ($_POST['mode'] ?? 'login') === 'register' ? 'register' : 'login';
+    $form_mode = ($_POST['form_mode'] ?? 'login') === 'register' ? 'register' : 'login';
     $user = trim($_POST['username'] ?? '');
     $pass = trim($_POST['password'] ?? '');
+    $selected_role = $_POST['role'] ?? 'guru';
 
-    if ($mode === 'register') {
+    if ($form_mode === 'register') {
         if ($user === '' || $pass === '') {
             $error = 'Username dan password wajib diisi.';
         } elseif (isset($_SESSION['dummy_users'][$user])) {
@@ -29,18 +35,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $_SESSION['dummy_users'][$user] = $pass;
             $success = 'Sign In berhasil. Silakan login dengan akun baru Anda.';
-            $mode = 'login';
+            $form_mode = 'login';
+            $_SESSION['pending_role'] = $selected_role;
         }
     } else {
         if (isset($_SESSION['dummy_users'][$user]) && $_SESSION['dummy_users'][$user] === $pass) {
             $_SESSION['loggedin'] = true;
             $_SESSION['username'] = $user;
-            unset($_SESSION['role']);
-            header("Location: pilih_role.php");
+            $_SESSION['role'] = $selected_role;
+            session_write_close();
+            if ($selected_role === 'guru') {
+                header("Location: beranda.php");
+            } else {
+                header("Location: request_nilai.php");
+            }
             exit();
         } else {
             $error = 'Username atau password salah.';
+            $_SESSION['pending_role'] = $selected_role;
         }
+    }
+    if (!$error) {
+        $_SESSION['pending_role'] = $selected_role;
     }
 }
 ?>
@@ -321,8 +337,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <div class="login-wrapper">
     <div class="login-card">
       <div class="login-logo">
-        <h1 class="login-title"><?= $mode === 'register' ? 'Buat Akun Dummy' : 'Selamat Datang' ?></h1>
-        <p class="login-sub"><?= $mode === 'register' ? 'Sign In untuk mencoba akun baru' : 'Masuk dengan akun Anda' ?></p>
+        <h1 class="login-title"><?= $form_mode === 'register' ? 'Buat Akun Anda' : 'Selamat Datang' ?></h1>
+        <p class="login-sub"><?= $form_mode === 'register' ? 'Sign In untuk buat akun baru Anda' : 'Masuk dengan akun Anda' ?></p>
+      </div>
+
+      <!-- Role Selection -->
+      <div style="display: flex; gap: 0.75rem; margin-bottom: 1.5rem; background: rgba(255,255,255,0.04); padding: 8px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+        <button type="button" class="role-btn" data-role="guru" style="flex:1; padding:10px; border:none; border-radius:6px; background:<?= $selected_role === 'guru' ? 'linear-gradient(135deg, var(--accent), var(--accent2))' : 'transparent' ?>; color:<?= $selected_role === 'guru' ? '#fff' : 'var(--text-muted)' ?>; cursor:pointer; font-weight:600; transition:all 0.3s ease; font-family:var(--font-body);" onclick="selectRole('guru')">
+         Guru
+        </button>
+        <button type="button" class="role-btn" data-role="murid" style="flex:1; padding:10px; border:none; border-radius:6px; background:<?= $selected_role === 'murid' ? 'linear-gradient(135deg, var(--accent), var(--accent2))' : 'transparent' ?>; color:<?= $selected_role === 'murid' ? '#fff' : 'var(--text-muted)' ?>; cursor:pointer; font-weight:600; transition:all 0.3s ease; font-family:var(--font-body);" onclick="selectRole('murid')">
+         Murid
+        </button>
       </div>
 
       <?php if ($success): ?>
@@ -339,7 +365,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <?php endif; ?>
 
       <form method="POST" action="">
-        <input type="hidden" name="mode" value="<?= $mode ?>">
+        <input type="hidden" name="form_mode" value="<?= $form_mode ?>">
+        <input type="hidden" id="roleInput" name="role" value="<?= htmlspecialchars($selected_role) ?>">
         <div class="form-group">
           <label class="form-label" for="username">Username</label>
           <div class="input-wrapper">
@@ -374,17 +401,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <button type="submit" class="btn-login">
-          <?= $mode === 'register' ? 'Sign In Dummy' : 'Masuk ke Dashboard' ?>
+          <?= $form_mode === 'register' ? 'Sign In' : 'Masuk' ?>
         </button>
       </form>
 
       <div style="text-align:center; margin-top:1.5rem; font-size:12px; color:var(--text-dim);">
-        Demo: <code style="background:rgba(255,255,255,0.05); padding:2px 6px; border-radius:4px; color:var(--accent);">guru</code> /
-        <code style="background:rgba(255,255,255,0.05); padding:2px 6px; border-radius:4px; color:var(--accent);">guru123</code>
+        Demo: Username: <strong>guru</strong> | Password: <strong>guru123</strong>
       </div>
 
       <div style="text-align:center; margin-top:1rem; font-size:13px;">
-        <?php if ($mode === 'register'): ?>
+        <?php if ($form_mode === 'register'): ?>
           <a href="login.php?mode=login" style="color:var(--accent); text-decoration:none;">Sudah punya akun? Login</a>
         <?php else: ?>
           <a href="login.php?mode=register" style="color:var(--accent); text-decoration:none;">Belum punya akun? Sign In</a>
@@ -401,6 +427,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   <script src="assets/js/main.js"></script>
   <script>
+    // Select role function
+    function selectRole(role) {
+      document.getElementById('roleInput').value = role;
+      const buttons = document.querySelectorAll('.role-btn');
+      buttons.forEach(btn => {
+        if (btn.dataset.role === role) {
+          btn.style.background = 'linear-gradient(135deg, var(--accent), var(--accent2))';
+          btn.style.color = '#fff';
+        } else {
+          btn.style.background = 'transparent';
+          btn.style.color = 'var(--text-muted)';
+        }
+      });
+    }
+
     // Toggle password visibility
     const togglePass = document.getElementById('togglePass');
     const passInput  = document.getElementById('password');
