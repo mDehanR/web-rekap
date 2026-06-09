@@ -23,6 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tugas = (float)($_POST['tugas'] ?? 0);
     $uts   = (float)($_POST['uts']   ?? 0);
     $uas   = (float)($_POST['uas']   ?? 0);
+    $mata  = trim($_POST['mata_pelajaran'] ?? '');
     $id    = (int)($_POST['id']      ?? 0);
 
     // Validasi
@@ -32,25 +33,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($uas   < 0 || $uas   > 100) $errors[] = 'Nilai UAS harus antara 0–100.';
 
     if (empty($errors)) {
+      if (empty($mata)) $errors[] = 'Pilih mata pelajaran.';
+    }
+
+    if (empty($errors)) {
         $akhir   = hitungNilaiAkhir($tugas, $uts, $uas);
         $huruf   = nilaiKeHuruf($akhir);
         $predikat= nilaiKePredikat($akhir);
-
-        if ($id > 0) {
-            // Update
-            $stmt = $conn->prepare("UPDATE siswa_nilai SET nama_siswa=?, tugas=?, uts=?, uas=?, akhir=?, huruf=?, predikat=? WHERE id=?");
-            $stmt->bind_param("sddddssl", $nama, $tugas, $uts, $uas, $akhir, $huruf, $predikat, $id);
-            $stmt->execute();
-            header("Location: rekap.php?success=2");
-            exit();
-        } else {
-            // Insert
-            $stmt = $conn->prepare("INSERT INTO siswa_nilai (nama_siswa, tugas, uts, uas, akhir, huruf, predikat) VALUES (?, ?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("sddddss", $nama, $tugas, $uts, $uas, $akhir, $huruf, $predikat);
-            $stmt->execute();
-            header("Location: rekap.php?success=1");
-            exit();
-        }
+      if ($id > 0) {
+        // Update (include mata_pelajaran)
+        $stmt = $conn->prepare("UPDATE siswa_nilai SET nama_siswa=?, mata_pelajaran=?, tugas=?, uts=?, uas=?, akhir=?, huruf=?, predikat=? WHERE id=?");
+        $stmt->bind_param("ssddddssi", $nama, $mata, $tugas, $uts, $uas, $akhir, $huruf, $predikat, $id);
+        $stmt->execute();
+        header("Location: rekap.php?success=2");
+        exit();
+      } else {
+        // Insert (include mata_pelajaran)
+        $stmt = $conn->prepare("INSERT INTO siswa_nilai (nama_siswa, mata_pelajaran, tugas, uts, uas, akhir, huruf, predikat) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssddddss", $nama, $mata, $tugas, $uts, $uas, $akhir, $huruf, $predikat);
+        $stmt->execute();
+        header("Location: rekap.php?success=1");
+        exit();
+      }
     }
 }
 ?>
@@ -61,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?= $editId ? 'Edit' : 'Input' ?> Nilai — Rekap Nilai</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=<?= filemtime(__DIR__ . '/style.css') ?>">
 </head>
 <body>
 <div id="toastContainer" class="toast-container"></div>
@@ -108,29 +112,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <?php endif; ?>
         </div>
 
-        <div class="card-body">
-          <form method="POST" action="">
-            <?php if ($editId): ?>
-              <input type="hidden" name="id" value="<?= $editId ?>">
-            <?php endif; ?>
+        <form method="POST" action="">
+          <?php if ($editId): ?>
+          <input type="hidden" name="id" value="<?= $editId ?>">
+          <?php endif; ?>
 
-            <!-- Nama Siswa -->
-            <div class="form-group" style="margin-bottom:1.5rem;">
-              <label class="form-label" for="nama_siswa">Nama Lengkap Siswa</label>
-              <input
-                type="text"
-                id="nama_siswa"
-                name="nama_siswa"
-                class="form-control-custom"
-                placeholder="Contoh: Ahmad Rizky Pratama"
-                value="<?= e($editData['nama_siswa'] ?? $_POST['nama_siswa'] ?? '') ?>"
-                maxlength="100"
-                required
-                autocomplete="off"
-              >
+          <div class="form-group" style="margin-bottom:1rem;">
+            <label class="form-label" for="nama_siswa">Nama Lengkap Siswa</label>
+            <input
+              type="text"
+              id="nama_siswa"
+              name="nama_siswa"
+              class="form-control-custom"
+              placeholder="Contoh: Ahmad Rizky Pratama"
+              value="<?= e($editData['nama_siswa'] ?? $_POST['nama_siswa'] ?? '') ?>"
+              maxlength="100"
+              required
+              autocomplete="off"
+            >
+          </div>
+
+          <div class="form-group" style="margin-bottom:1.5rem;">
+            <label class="form-label" for="mata_pelajaran">Mata Pelajaran</label>
+            <?php
+              $matpels = ['Produktif','PAI','IPAS','Sejarah','Matematika','PJOK','PPKN','Seni Budaya','Basa Sunda','Inggris'];
+              $current = $editData['mata_pelajaran'] ?? $_POST['mata_pelajaran'] ?? '';
+            ?>
+            <div class="matpel-buttons" role="list">
+              <?php foreach ($matpels as $mp):
+                $isActive = ($current === $mp) ? ' active' : '';
+              ?>
+              <div role="button" tabindex="0" class="matpel-button<?= $isActive ?>" data-value="<?= e($mp) ?>"><?= e($mp) ?></div>
+              <?php endforeach; ?>
             </div>
+            <input type="hidden" name="mata_pelajaran" id="mata_pelajaran" value="<?= e($current) ?>">
+          </div>
 
-            <!-- Nilai Grid -->
+          <!-- Nilai Grid -->
             <div class="form-row" style="margin-bottom:1.5rem;">
               <div class="form-group">
                 <label class="form-label" for="tugas">

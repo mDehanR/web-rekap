@@ -273,5 +273,119 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     });
   }
+  /* ── 13. CUSTOM SELECT BEHAVIOR ── */
+  function closeAllCustomSelects(except) {
+    document.querySelectorAll('.custom-select.open').forEach(cs => {
+      if (cs !== except) cs.classList.remove('open');
+      const btn = cs.querySelector('.custom-select__trigger');
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  document.querySelectorAll('.custom-select').forEach(cs => {
+    const trigger = cs.querySelector('.custom-select__trigger');
+    const list = cs.querySelector('.custom-select__options');
+    const input = cs.querySelector('input[type="hidden"]');
+
+    // Open/close on click
+    trigger.addEventListener('click', (e) => {
+      const isOpen = cs.classList.toggle('open');
+      trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      if (isOpen) {
+        closeAllCustomSelects(cs);
+        // position popup (fixed) below trigger
+        const rect = trigger.getBoundingClientRect();
+        list.style.minWidth = rect.width + 'px';
+        list.style.left = rect.left + 'px';
+        // position below, with small gap
+        list.style.top = (rect.bottom + 6) + 'px';
+        // focus the list for keyboard
+        list.querySelector('.custom-select__option')?.focus();
+      } else {
+        // clear inline positioning
+        list.style.left = '';
+        list.style.top = '';
+        list.style.minWidth = '';
+      }
+    });
+
+    // Option click
+    list.querySelectorAll('.custom-select__option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        const val = opt.dataset.value;
+        const label = opt.textContent.trim();
+        // set visible text
+        cs.querySelector('.custom-select__value').textContent = label.replace(/^✓\s*/,'');
+        // set hidden input
+        if (input) input.value = val;
+        // mark selected
+        list.querySelectorAll('.custom-select__option').forEach(o => o.setAttribute('aria-selected','false'));
+        opt.setAttribute('aria-selected','true');
+        cs.classList.remove('open');
+        trigger.setAttribute('aria-expanded','false');
+      });
+    });
+
+    // Close on outside click
+    document.addEventListener('click', (ev) => {
+      if (!cs.contains(ev.target)) {
+        cs.classList.remove('open');
+        trigger.setAttribute('aria-expanded','false');
+        // clear inline positioning
+        list.style.left = '';
+        list.style.top = '';
+        list.style.minWidth = '';
+      }
+    });
+
+    // Keyboard support
+    trigger.addEventListener('keydown', (ev) => {
+      if (ev.key === 'ArrowDown' || ev.key === 'Enter' || ev.key === ' ') {
+        ev.preventDefault();
+        cs.classList.add('open');
+        trigger.setAttribute('aria-expanded','true');
+        list.querySelector('.custom-select__option')?.focus();
+      }
+    });
+
+    list.querySelectorAll('.custom-select__option').forEach((opt, idx, arr) => {
+      opt.setAttribute('tabindex','0');
+      opt.addEventListener('keydown', (ev) => {
+        if (ev.key === 'ArrowDown') { ev.preventDefault(); arr[(idx+1)%arr.length].focus(); }
+        if (ev.key === 'ArrowUp')   { ev.preventDefault(); arr[(idx-1+arr.length)%arr.length].focus(); }
+        if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); opt.click(); }
+        if (ev.key === 'Escape') { cs.classList.remove('open'); trigger.focus(); }
+      });
+    });
+  });
+
+  /* ── 14. MATPEL BUTTONS (replace dropdown) ── */
+  (function () {
+    const hidden = document.getElementById('mata_pelajaran');
+    const buttons = document.querySelectorAll('.matpel-button');
+    if (!buttons || buttons.length === 0) return;
+
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        buttons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        if (hidden) hidden.value = btn.dataset.value || '';
+      });
+      // keyboard support: Enter / Space
+      btn.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          btn.click();
+        }
+      });
+    });
+
+    // initialize active from hidden value
+    if (hidden && hidden.value) {
+      buttons.forEach(b => {
+        if (b.dataset.value === hidden.value) b.classList.add('active');
+      });
+    }
+  })();
 
 });

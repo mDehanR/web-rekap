@@ -135,6 +135,7 @@ $avgAkhir   = $totalSiswa > 0 ? array_sum(array_column($allData, 'akhir')) / $to
                   Nama Siswa <span class="sort-arrow"><?= $sortCol === 'nama_siswa' ? ($sortDir === 'ASC' ? '↑' : '↓') : '↕' ?></span>
                 </a>
               </th>
+              <th>Mata Pelajaran</th>
               <th>Tugas</th>
               <th>UTS</th>
               <th>UAS</th>
@@ -151,7 +152,7 @@ $avgAkhir   = $totalSiswa > 0 ? array_sum(array_column($allData, 'akhir')) / $to
           <tbody>
             <?php if (empty($allData)): ?>
             <tr>
-              <td colspan="9">
+              <td colspan="10">
                 <div class="empty-state">
                   <div class="empty-icon">📝</div>
                   <div class="empty-title">Belum ada data nilai</div>
@@ -168,6 +169,7 @@ $avgAkhir   = $totalSiswa > 0 ? array_sum(array_column($allData, 'akhir')) / $to
             <tr>
               <td style="color:var(--text-dim); font-size:12px;"><?= $i + 1 ?></td>
               <td class="name-cell"><?= e($row['nama_siswa']) ?></td>
+              <td style="font-size:13px; color:var(--text-muted);"><?= e($row['mata_pelajaran']) ?></td>
               <td class="num-cell">
                 <div class="progress-bar-wrap">
                   <?= number_format($row['tugas'], 1) ?>
